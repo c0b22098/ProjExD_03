@@ -143,7 +143,7 @@ class Beam:
     BEAM_SPEED = (5, 0)
 
     def __init__(self, koukaton: Bird) -> None:
-        self.img = pg.transform.rotozoom(pg.image.load("ex03/fig/beam.png"), np.rad2deg(math.atan2(koukaton.dire[1], koukaton.dire[0])), 2)
+        self.img = pg.transform.rotozoom(pg.image.load("ex03/fig/beam.png"), math.degrees(math.atan2(koukaton.dire[1], koukaton.dire[0])), 2)
         self.img = pg.transform.flip(self.img, False, True)
         self.rct = self.img.get_rect()
         krct = koukaton.rct.copy()
@@ -249,7 +249,7 @@ def main():
             score.num += 1
             bird.change_img(6, screen)
             pg.display.update()
-            time.sleep(1)
+            # time.sleep(1)
 
         timer.update(screen)
         score.update(screen)
