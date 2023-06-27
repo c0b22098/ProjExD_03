@@ -5,8 +5,8 @@ import time
 import pygame as pg
 
 
-WIDTH = 1600  # ゲームウィンドウの幅
-HEIGHT = 900  # ゲームウィンドウの高さ
+WIDTH = 1200  # ゲームウィンドウの幅1600
+HEIGHT = 600  # ゲームウィンドウの高さ900
 
 
 
@@ -128,10 +128,11 @@ class Beam:
         screen.blit(self.img, self.rct)
 
 
-beamList: list[Beam] = [] #画面内にあるビームのリスト
+
 
 
 def main():
+    beamList: list[Beam] = [] #画面内にあるビームのリスト
     pg.display.set_caption("たたかえ！こうかとん")
     screen = pg.display.set_mode((WIDTH, HEIGHT))    
     bg_img = pg.image.load("ex03/fig/pg_bg.jpg")
@@ -141,7 +142,6 @@ def main():
     clock = pg.time.Clock()
     tmr = 0
     while True:
-        
         for event in pg.event.get():
             if event.type == pg.QUIT:
                 return
@@ -150,14 +150,20 @@ def main():
 
         key_lst = pg.key.get_pressed()
         screen.blit(bg_img, [0, 0])
-
+        beamList = [b for b in beamList if b is not None]
         for i in range(len(beamList)):
             if bomb is not None and beamList[i] is not None and beamList[i].rct.colliderect(bomb.rct):
-                beamList[i] == None
+                beamList[i] = None
                 bomb = None
                 continue
             else:
                 beamList[i].update(screen)
+
+        if bomb is None:
+            bird.change_img(6, screen)
+            pg.display.update()
+            time.sleep(1)
+            bomb = Bomb((255, 0, 0), 10)
 
         if bird.rct.colliderect(bomb.rct):
             # ゲームオーバー時に，こうかとん画像を切り替え，1秒間表示させる
