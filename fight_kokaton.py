@@ -51,6 +51,7 @@ class Bird:
                 2.0)
         self.rct = self.img.get_rect()
         self.rct.center = xy
+        self.dire = (5, 0)
 
     def change_img(self, num: int, screen: pg.Surface):
         """
@@ -74,15 +75,12 @@ class Bird:
                 sum_mv[1] += mv[1]
         self.rct.move_ip(sum_mv)
         if check_bound(self.rct) != (True, True):
-            self.rct.move_ip(-sum_mv[0], -sum_mv[1]) 
-        # 操作がない場合
-        if np.array_equal(sum_mv, (0, 0)):
-            kk_rotation = 270
-            is_flip = True
-        else:
+            self.rct.move_ip(-sum_mv[0], -sum_mv[1])
+        if not np.array_equal(sum_mv, (0, 0)):
             # 操作がある場合
-            kk_rotation = math.atan2(abs(sum_mv[0]) * -1, sum_mv[1]) * 180 / np.pi
-            is_flip = sum_mv[0] >= 0
+            self.dire = sum_mv
+        kk_rotation = math.atan2(abs(self.dire[0]) * -1, self.dire[1]) * 180 / np.pi
+        is_flip = self.dire[0] >= 0
         kk_img_roto = pg.transform.rotozoom(self.img, kk_rotation + 90, 1.0)
         screen.blit(pg.transform.flip(kk_img_roto, is_flip, False), self.rct)
 
@@ -144,13 +142,16 @@ class Beam:
     BEAM_SPEED = (5, 0)
 
     def __init__(self, koukaton: Bird) -> None:
-        self.img = pg.image.load("ex03/fig/beam.png")
+        self.img = pg.transform.rotozoom(pg.image.load("ex03/fig/beam.png"), np.rad2deg(math.atan2(koukaton.dire[1], koukaton.dire[0])), 2)
+        self.img = pg.transform.flip(self.img, False, True)
         self.rct = self.img.get_rect()
         krct = koukaton.rct.copy()
-        self.rct.center = (krct.centerx + krct.width / 2 + 5, krct.centery + 5)
+        self.bspeed = koukaton.dire
+        self.rct.centerx = krct.centerx + krct.width * self.bspeed[0] / 5
+        self.rct.centery = krct.centery + krct.height * self.bspeed[1] / 5
 
     def update(self, screen: pg.Surface):
-        self.rct.move_ip(Beam.BEAM_SPEED)
+        self.rct.move_ip(self.bspeed)
         screen.blit(self.img, self.rct)
 
 
