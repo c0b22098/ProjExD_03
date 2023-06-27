@@ -173,10 +173,23 @@ class Explosion:
         screen.blit(self.imgs[self.life % 4 // 2], self.rct)
 
 
+class Score:
+    XY = (100, HEIGHT - 50)
+    def __init__(self) -> None:
+        self.num = 0
+        self.font = pg.font.SysFont("hgp創英角ﾎﾟｯﾌﾟ体", 30)
+        self.img = self.font.render("スコア：0", 0, (0, 0, 255))
+    
+    def update(self, screen: pg.Surface):
+        self.img = self.font.render(f"スコア：{self.num}", 0, (0, 0, 255))
+        screen.blit(self.img, Score.XY)
+
+
 def main():
     bombList = [Bomb(10) for __ in range(NUM_OF_BOMBS)]
     beamList: list[Beam] = [] #画面内にあるビームのリスト
     exploList: list[Explosion] = []
+    score = Score()
     pg.display.set_caption("たたかえ！こうかとん")
     screen = pg.display.set_mode((WIDTH, HEIGHT))    
     bg_img = pg.image.load("ex03/fig/pg_bg.jpg")
@@ -216,6 +229,7 @@ def main():
         beamList = [b for b in beamList if b is not None]
         
         if isHit:
+            score.num += 1
             bird.change_img(6, screen)
             pg.display.update()
             time.sleep(1)
@@ -230,6 +244,7 @@ def main():
             else:
                 b.update(screen)
         bird.update(key_lst, screen)
+        score.update(screen)
         pg.display.update()
         tmr += 1
         clock.tick(50)
