@@ -226,7 +226,7 @@ def main():
 
         exploList = [e for e in exploList if e.life != 0]
         bombList = [a for a in bombList if a is not None]
-        beamList = [b for b in beamList if b is not None]
+        beamList = [b for b in beamList if b is not None and check_bound(b.rct)[0] and check_bound(b.rct)[1]]
         
         if isHit:
             score.num += 1
