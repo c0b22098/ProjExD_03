@@ -137,7 +137,7 @@ class Bomb:
 
 class Beam:
     """
-    ビームの関数
+    ビームのクラス
     """
     
     BEAM_SPEED = (5, 0)
