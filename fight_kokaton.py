@@ -145,21 +145,21 @@ def main():
         for event in pg.event.get():
             if event.type == pg.QUIT:
                 return
-            if event.type == pg.KEYDOWN and pg.key.get_pressed()[pg.K_SPACE]:
+            if event.type == pg.KEYDOWN and event.key == pg.K_SPACE:
                 beamList.append(Beam(bird))
 
         key_lst = pg.key.get_pressed()
         screen.blit(bg_img, [0, 0])
 
         for i in range(len(beamList)):
-            if bomb is not None and beamList[i].rct.colliderect(bomb.rct):
-                del beamList[i]
+            if bomb is not None and beamList[i] is not None and beamList[i].rct.colliderect(bomb.rct):
+                beamList[i] == None
                 bomb = None
                 continue
             else:
                 beamList[i].update(screen)
 
-        if bomb is None or bird.rct.colliderect(bomb.rct):
+        if bird.rct.colliderect(bomb.rct):
             # ゲームオーバー時に，こうかとん画像を切り替え，1秒間表示させる
             bird.change_img(8, screen)
             pg.display.update()
