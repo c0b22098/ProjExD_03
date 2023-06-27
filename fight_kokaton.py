@@ -1,13 +1,14 @@
 import random
 import sys
 import time
+import random
 
 import pygame as pg
 
 
 WIDTH = 1200  # ゲームウィンドウの幅1600
 HEIGHT = 600  # ゲームウィンドウの高さ900
-
+NUM_OF_BOMBS = 3
 
 
 
@@ -83,18 +84,36 @@ class Bomb:
     """
     爆弾に関するクラス
     """
-    def __init__(self, color: tuple[int, int, int], rad: int):
+    
+    BOMB_COLORS = (
+        (255, 0, 0),
+        (0, 255, 0),
+        (0, 0, 255),
+        (255, 255, 0),
+        (255, 0, 255),
+        (0, 255, 255)
+        )
+    BOMB_DIRECTIONS = (
+        (5, 5),
+        (0, 7.5),
+        (7.5, 0),
+        (-5, -5),
+        (0, -7.5),
+        (-7.5, 0)
+    )
+    
+    def __init__(self, rad: int):
         """
         引数に基づき爆弾円Surfaceを生成する
         引数1 color：爆弾円の色タプル
         引数2 rad：爆弾円の半径
         """
         self.img = pg.Surface((2*rad, 2*rad))
-        pg.draw.circle(self.img, color, (rad, rad), rad)
+        pg.draw.circle(self.img, random.choice(Bomb.BOMB_COLORS), (rad, rad), rad)
         self.img.set_colorkey((0, 0, 0))
         self.rct = self.img.get_rect()
         self.rct.center = random.randint(0, WIDTH), random.randint(0, HEIGHT)
-        self.vx, self.vy = +5, +5
+        self.vx, self.vy = random.choice(Bomb.BOMB_DIRECTIONS)
 
     def update(self, screen: pg.Surface):
         """
@@ -132,12 +151,13 @@ class Beam:
 
 
 def main():
+    bombList = [Bomb(10) for __ in range(5)]
     beamList: list[Beam] = [] #画面内にあるビームのリスト
     pg.display.set_caption("たたかえ！こうかとん")
     screen = pg.display.set_mode((WIDTH, HEIGHT))    
     bg_img = pg.image.load("ex03/fig/pg_bg.jpg")
     bird = Bird(3, (900, 400))
-    bomb = Bomb((255, 0, 0), 10)
+    
 
     clock = pg.time.Clock()
     tmr = 0
@@ -150,30 +170,37 @@ def main():
 
         key_lst = pg.key.get_pressed()
         screen.blit(bg_img, [0, 0])
-        beamList = [b for b in beamList if b is not None]
+        isHit = False
         for i in range(len(beamList)):
-            if bomb is not None and beamList[i] is not None and beamList[i].rct.colliderect(bomb.rct):
-                beamList[i] = None
-                bomb = None
-                continue
-            else:
-                beamList[i].update(screen)
+            for j in range(len(bombList)):
+                if beamList[i] is None or bombList[i] is None:
+                    continue
+                if beamList[i].rct.colliderect(bombList[j].rct):
+                    beamList[i] = None
+                    bombList[j] = None
+                    isHit = True
+                    continue
+                else:
+                    beamList[i].update(screen)
 
-        if bomb is None:
+        bombList = [a for a in bombList if a is not None]
+        beamList = [b for b in beamList if b is not None]
+        
+        if isHit:
             bird.change_img(6, screen)
             pg.display.update()
             time.sleep(1)
-            bomb = Bomb((255, 0, 0), 10)
 
-        if bird.rct.colliderect(bomb.rct):
-            # ゲームオーバー時に，こうかとん画像を切り替え，1秒間表示させる
-            bird.change_img(8, screen)
-            pg.display.update()
-            time.sleep(1)
-            return
-        
+        for b in bombList:
+            if bird.rct.colliderect(b.rct):
+                # ゲームオーバー時に，こうかとん画像を切り替え，1秒間表示させる
+                bird.change_img(8, screen)
+                pg.display.update()
+                time.sleep(1)
+                return
+            else:
+                b.update(screen)
         bird.update(key_lst, screen)
-        bomb.update(screen)
         pg.display.update()
         tmr += 1
         clock.tick(50)
