@@ -158,7 +158,7 @@ class Beam:
 
 
 def main():
-    bombList = [Bomb(10) for __ in range(5)]
+    bombList = [Bomb(10) for __ in range(NUM_OF_BOMBS)]
     beamList: list[Beam] = [] #画面内にあるビームのリスト
     pg.display.set_caption("たたかえ！こうかとん")
     screen = pg.display.set_mode((WIDTH, HEIGHT))    
@@ -180,15 +180,15 @@ def main():
         isHit = False
         for i in range(len(beamList)):
             for j in range(len(bombList)):
-                if beamList[i] is None or bombList[i] is None:
+                if bombList[j] is None or beamList[i] is None:
                     continue
                 if beamList[i].rct.colliderect(bombList[j].rct):
                     beamList[i] = None
                     bombList[j] = None
                     isHit = True
                     continue
-                else:
-                    beamList[i].update(screen)
+            if beamList[i] is not None:
+                beamList[i].update(screen)
 
         bombList = [a for a in bombList if a is not None]
         beamList = [b for b in beamList if b is not None]
@@ -211,7 +211,7 @@ def main():
         pg.display.update()
         tmr += 1
         clock.tick(50)
-
+ 
 
 if __name__ == "__main__":
     pg.init()
