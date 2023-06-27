@@ -154,12 +154,28 @@ class Beam:
         screen.blit(self.img, self.rct)
 
 
+class Explosion:
+    """
+    爆発を発生させるクラス
+    """
+    def __init__(self, bomb: Bomb) -> None:
+        self.imgs: list[pg.Surface] = []
+        img = pg.image.load("ex03/fig/explosion.gif")
+        self.imgs.append(img)
+        self.imgs.append(pg.transform.flip(img, True, True))
+        self.rct = self.imgs[0].get_rect()
+        self.rct.center = (bomb.rct.center)
+        self.life = 20
 
+    def update(self, screen: pg.Surface):
+        self.life -= 1
+        screen.blit(self.imgs[self.life % 4 // 2], self.rct)
 
 
 def main():
     bombList = [Bomb(10) for __ in range(NUM_OF_BOMBS)]
     beamList: list[Beam] = [] #画面内にあるビームのリスト
+    exploList: list[Explosion] = []
     pg.display.set_caption("たたかえ！こうかとん")
     screen = pg.display.set_mode((WIDTH, HEIGHT))    
     bg_img = pg.image.load("ex03/fig/pg_bg.jpg")
@@ -183,6 +199,7 @@ def main():
                 if bombList[j] is None or beamList[i] is None:
                     continue
                 if beamList[i].rct.colliderect(bombList[j].rct):
+                    exploList.append(Explosion(bombList[j]))
                     beamList[i] = None
                     bombList[j] = None
                     isHit = True
@@ -190,6 +207,10 @@ def main():
             if beamList[i] is not None:
                 beamList[i].update(screen)
 
+        for e in exploList:
+            e.update(screen)
+
+        exploList = [e for e in exploList if e.life != 0]
         bombList = [a for a in bombList if a is not None]
         beamList = [b for b in beamList if b is not None]
         
