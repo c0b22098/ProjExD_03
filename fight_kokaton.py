@@ -9,6 +9,8 @@ WIDTH = 1600  # ゲームウィンドウの幅
 HEIGHT = 900  # ゲームウィンドウの高さ
 
 
+
+
 def check_bound(obj_rct: pg.Rect) -> tuple[bool, bool]:
     """
     オブジェクトが画面内or画面外を判定し，真理値タプルを返す関数
@@ -108,6 +110,27 @@ class Bomb:
         screen.blit(self.img, self.rct)
 
 
+class Beam:
+    """
+    ビームの関数
+    """
+    
+    BEAM_SPEED = (5, 0)
+
+    def __init__(self, koukaton: Bird) -> None:
+        self.img = pg.image.load("ex03/fig/beam.png")
+        self.rct = self.img.get_rect()
+        krct = koukaton.rct.copy()
+        self.rct.center = (krct.centerx + krct.width / 2 + 5, krct.centery + 5)
+
+    def update(self, screen: pg.Surface):
+        self.rct.move_ip(Beam.BEAM_SPEED)
+        screen.blit(self.img, self.rct)
+
+
+beamList: list[Beam] = [] #画面内にあるビームのリスト
+
+
 def main():
     pg.display.set_caption("たたかえ！こうかとん")
     screen = pg.display.set_mode((WIDTH, HEIGHT))    
@@ -118,20 +141,31 @@ def main():
     clock = pg.time.Clock()
     tmr = 0
     while True:
+        
         for event in pg.event.get():
             if event.type == pg.QUIT:
                 return
-        
+            if event.type == pg.KEYDOWN and pg.key.get_pressed()[pg.K_SPACE]:
+                beamList.append(Beam(bird))
+
+        key_lst = pg.key.get_pressed()
         screen.blit(bg_img, [0, 0])
-        
-        if bird.rct.colliderect(bomb.rct):
+
+        for i in range(len(beamList)):
+            if bomb is not None and beamList[i].rct.colliderect(bomb.rct):
+                del beamList[i]
+                bomb = None
+                continue
+            else:
+                beamList[i].update(screen)
+
+        if bomb is None or bird.rct.colliderect(bomb.rct):
             # ゲームオーバー時に，こうかとん画像を切り替え，1秒間表示させる
             bird.change_img(8, screen)
             pg.display.update()
             time.sleep(1)
             return
-
-        key_lst = pg.key.get_pressed()
+        
         bird.update(key_lst, screen)
         bomb.update(screen)
         pg.display.update()
