@@ -3,6 +3,7 @@ import sys
 import time
 import math
 import random
+import time as time2
 
 import pygame as pg
 import numpy as np
@@ -185,11 +186,27 @@ class Score:
         screen.blit(self.img, Score.XY)
 
 
+class Timer:
+    XY = (WIDTH - 100, 50)
+    def __init__(self) -> None:
+        self.font = pg.font.SysFont("hgp創英角ﾎﾟｯﾌﾟ体", 30)
+        self.limit = 20
+        self.start = time2.time()
+    
+    def update(self, screen: pg.Surface):
+        img = self.font.render(f"{int(self.limit - (time2.time() - self.start))}", 0, (255, 0, 0))
+        screen.blit(img, Timer.XY)
+
+    def isFinished(self):
+        return (self.limit - (time2.time() - self.start)) <= 0
+
+
 def main():
     bombList = [Bomb(10) for __ in range(NUM_OF_BOMBS)]
     beamList: list[Beam] = [] #画面内にあるビームのリスト
     exploList: list[Explosion] = []
     score = Score()
+    timer = Timer()
     pg.display.set_caption("たたかえ！こうかとん")
     screen = pg.display.set_mode((WIDTH, HEIGHT))    
     bg_img = pg.image.load("ex03/fig/pg_bg.jpg")
@@ -234,18 +251,25 @@ def main():
             pg.display.update()
             time.sleep(1)
 
+        timer.update(screen)
+        score.update(screen)
+
         for b in bombList:
-            if bird.rct.colliderect(b.rct):
-                # ゲームオーバー時に，こうかとん画像を切り替え，1秒間表示させる
-                bird.change_img(8, screen)
+            if bird.rct.colliderect(b.rct) or timer.isFinished():
+                if timer.isFinished() and score.num >= 1:
+                    # タイム切れでスコアが１以上なら笑顔に
+                    bird.change_img(9, screen)
+                else:
+                    # ゲームオーバー時は悲しい顔で1秒間表示させる
+                    bird.change_img(8, screen)
                 pg.display.update()
                 time.sleep(1)
                 return
             else:
                 b.update(screen)
         bird.update(key_lst, screen)
-        score.update(screen)
         pg.display.update()
+        
         tmr += 1
         clock.tick(50)
  
